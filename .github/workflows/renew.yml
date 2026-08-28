@@ -77,6 +77,27 @@ jobs:
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python3 main.py
 
+      - name: Collect diagnostics
+        if: always()
+        run: |
+          echo "=== 当前时间 ==="
+          date -u
+          echo "=== 工作目录 ==="
+          pwd
+          echo "=== 工作目录文件 ==="
+          find . -maxdepth 2 -type f -print
+          echo "=== Chrome 版本 ==="
+          google-chrome --version 2>&1 || true
+          chromedriver --version 2>&1 || true
+          echo "=== seleniumbase 版本 ==="
+          python3 -c "import seleniumbase; print(seleniumbase.__version__)" 2>&1 || true
+          echo "=== Chrome / chromedriver 进程 ==="
+          ps aux | grep -E 'chrome|chromedriver' | head -20 || true
+          echo "=== DISPLAY ==="
+          echo "DISPLAY=$DISPLAY"
+          echo "=== X display 信息 ==="
+          xdpyinfo 2>&1 | head -20 || true
+
       - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,4 +108,4 @@ jobs:
             screenshots/
             singbox.log
             config.json
-          if-no-files-found: ignore
+          if-no-files-found: warn
